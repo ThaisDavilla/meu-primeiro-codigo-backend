@@ -2,6 +2,9 @@ const express = require("express") // iniciando o express
 const router = express.Router() // configurando a primeira parte da rota
 const { v4: uuidv4 } = require('uuid');
 
+const conectaBancoDeDados = require('./bancoDeDados') //ligando ao arquivo banco de dados
+conectaBancoDeDados() //chamando a função que liga ao banco de dados
+
 const app = express() //iniciando o app
 app.use(express.json())
 const porta = 3333 //criando a porta
@@ -47,11 +50,54 @@ function criaMulher(request, response){
     response.json(mulheres)
 }
 
+//patch
+function corrigeMulher(request, response){
+    function encontraMulher(mulher) {
+        if (mulher.id === request.params.id){
+            return mulher 
+        }
+
+    }
+
+    const mulherEncontrada = mulheres.find(encontraMulher)
+
+    if (request.body.nome){
+        mulherEncontrada.nome = request.body.nome
+    }
+
+    if (request.body.minibio){
+        mulherEncontrada.minibio = request.body.minibio
+    }
+
+    if (request.body.imagem){
+        mulherEncontrada.imagem = request.body.imagem
+    }
+
+    response.json(mulheres)
+}
+
+//delete
+function deletaMulher(request, response){
+    function todasMenosEla(mulher) {
+        if(mulher.id !== request.params.id) {
+            return mulher
+        }
+    }
+
+    const mulheresQueFicam = mulheres.filter(todasMenosEla)
+
+    response.json(mulheresQueFicam)
+}
+
+app.use(router.get("/mulheres", mostraMulheres)) //rota get/mulheres
+app.use(router.post("/mulheres", criaMulher)) //rota post/mulheres
+app.use(router.patch("/mulheres/:id", corrigeMulher)) //rota patch/mulheres
+app.use(router.delete("/mulheres/:id", deletaMulher)) //rota deleta/mulheres
+
 //porta
 function mostraPorta() {
     console.log("Servidor criado e rodando na porta ", porta)
 }
 
-app.use(router.get("/mulheres", mostraMulheres)) //rota get/mulheres
-app.use(router.post("/mulheres", criaMulher)) //rota post/mulheres
+
 app.listen(porta, mostraPorta) //ouvindo a porta
